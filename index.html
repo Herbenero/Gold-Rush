@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -207,10 +206,9 @@
   let currentPlayerIdx = 0;
   let dartsThrownInTurn = [];
   let activeModifier = 1;
-  let goldSegmentsHistory = []; // Stores gold segments per round: history[roundNumber - 1]
-  let moveHistory = []; // Full undo stack across all turns and rounds
+  let goldSegmentsHistory = [];
+  let moveHistory = [];
 
-  // Build 1-20 buttons
   const numPad = document.getElementById('num-pad');
   for (let i = 1; i <= 20; i++) {
     const btn = document.createElement('button');
@@ -298,7 +296,6 @@
       }
     }
 
-    // Save deep snapshot into history BEFORE applying throw
     moveHistory.push({
       currentRound: currentRound,
       currentPlayerIdx: currentPlayerIdx,
@@ -326,7 +323,6 @@
   function processEndOfTurn() {
     const player = players[currentPlayerIdx];
     
-    // Check missing all gold segments penalty
     if (player.hitsThisRound === 0) {
       player.score = Math.floor(player.score / 2);
     }
@@ -335,7 +331,6 @@
     currentPlayerIdx++;
     dartsThrownInTurn = [];
 
-    // Advance round if all players completed their turns
     if (currentPlayerIdx >= players.length) {
       currentPlayerIdx = 0;
       currentRound++;
@@ -395,12 +390,10 @@
   function updateUI() {
     const currentGold = goldSegmentsHistory[currentRound - 1] || [];
 
-    // Header Info
     document.getElementById('round-display').innerText = `Round ${currentRound} of ${TOTAL_ROUNDS}`;
     document.getElementById('player-display').innerText = `${players[currentPlayerIdx].name}'s Turn`;
     document.getElementById('btn-undo').disabled = moveHistory.length === 0;
 
-    // Dart Slots
     for (let i = 0; i < 3; i++) {
       const slot = document.getElementById(`dart-${i}`);
       if (i < dartsThrownInTurn.length) {
@@ -413,7 +406,6 @@
       }
     }
 
-    // Number Pad Highlighting
     for (let i = 1; i <= 20; i++) {
       const btn = document.getElementById(`btn-num-${i}`);
       if (currentGold.includes(i)) {
@@ -423,7 +415,6 @@
       }
     }
 
-    // Scoreboard
     const tbody = document.getElementById('scoreboard-body');
     tbody.innerHTML = '';
     players.forEach((p, idx) => {
@@ -506,549 +497,6 @@
     const y1 = outerR * Math.sin(rad1);
     const x2 = outerR * Math.cos(rad2);
     const y2 = outerR * Math.sin(rad2);
-    const x3 = innerR * Math.cos(rad2);
-    const y3 = innerR * Math.sin(rad2);
-    const x4 = innerR * Math.cos(rad1);
-    const y4 = innerR * Math.sin(rad1);
-
-    const pathData = [
-      `M ${x1} ${y1}`,
-      `A ${outerR} ${outerR} 0 0 1 ${x2} ${y2}`,
-      `L ${x3} ${y3}`,
-      `A ${innerR} ${innerR} 0 0 0 ${x4} ${y4}`,
-      'Z'
-    ].join(' ');
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", pathData);
-    path.setAttribute("fill", fill);
-    path.setAttribute("stroke", "#222");
-    path.setAttribute("stroke-width", "0.3");
-    svg.appendChild(path);
-  }
-</script>
-</body>
-</html>h - Dart Game</title>
-  <style>
-    :root {
-      --bg: #121214;
-      --card-bg: #1e1e24;
-      --accent: #ffd700;
-      --accent-dark: #c5a000;
-      --text: #f0f0f5;
-      --text-muted: #a0a0b0;
-      --danger: #ff4757;
-      --success: #2ed573;
-      --board-black: #111;
-      --board-white: #e0e0e0;
-      --board-red: #d63031;
-      --board-green: #00b894;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
-    
-    .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 20px; }
-    h1 { text-align: center; color: var(--accent); font-size: 2.5rem; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-
-    .card { background-color: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
-    
-    /* Setup Screen */
-    .setup-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-muted); }
-    input[type="text"] { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #333; background: #2a2a35; color: white; font-size: 1rem; }
-    .player-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
-    .btn { padding: 12px 20px; border: none; border-radius: 6px; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
-    .btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-secondary { background: #333340; color: white; }
-    .btn-secondary:hover { background: #444455; }
-    .btn-danger { background: var(--danger); color: white; }
-    
-    .board-select { display: flex; gap: 20px; }
-    .radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-
-    /* Game Screen Grid */
-    .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 768px) { .game-grid { grid-template-columns: 1fr; } }
-
-    /* Dartboard Styling */
-    .board-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #dartboard { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; }
-
-    /* Controls */
-    .num-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
-    .num-btn { padding: 12px 0; background: #2a2a35; color: white; border: 1px solid #444; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-    .num-btn:hover { background: #3a3a45; }
-    .num-btn.active-target { border: 2px solid var(--accent); background: #3a3a25; }
-
-    .modifier-pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
-    .mod-btn { padding: 12px 0; background: #333345; color: white; border: 1px solid #555; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .mod-btn.active { background: var(--accent); color: #000; }
-    .mod-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    /* Turn Info */
-    .turn-card { display: flex; flex-direction: column; gap: 10px; text-align: center; }
-    .round-indicator { font-size: 1.2rem; color: var(--accent); font-weight: bold; }
-    .current-player { font-size: 1.8rem; font-weight: bold; }
-    .dart-display { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-    .dart-slot { width: 50px; height: 50px; border-radius: 50%; border: 2px dashed #555; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; background: #18181c; }
-    .dart-slot.filled { border-style: solid; border-color: var(--accent); color: var(--accent); background: #252515; }
-    .dart-slot.miss { border-color: var(--danger); color: var(--danger); background: #251515; }
-
-    /* Scoreboard */
-    .scores-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .scores-table th, .scores-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #333; }
-    .scores-table th { color: var(--text-muted); }
-    .active-row { background: rgba(255, 215, 0, 0.1); font-weight: bold; }
-
-    /* Final Scoreboard */
-    .winner-box { text-align: center; padding: 20px; background: rgba(255, 215, 0, 0.15); border: 2px solid var(--accent); border-radius: 8px; margin-bottom: 20px; }
-    .winner-name { font-size: 2rem; color: var(--accent); font-weight: bold; }
-
-    .hidden { display: none !important; }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <h1>🎯 Gold Rush</h1>
-
-  <!-- SETUP SCREEN -->
-  <div id="setup-screen" class="card">
-    <div class="setup-group">
-      <label>Players</label>
-      <div id="player-inputs" class="player-inputs">
-        <input type="text" class="player-name" placeholder="Player 1 Name" value="Player 1">
-        <input type="text" class="player-name" placeholder="Player 2 Name" value="Player 2">
-      </div>
-      <button class="btn btn-secondary" onclick="addPlayerInput()">+ Add Player</button>
-    </div>
-
-    <div class="setup-group">
-      <label>Board Type</label>
-      <div class="board-select">
-        <label class="radio-label">
-          <input type="radio" name="boardType" value="basic" checked> Basic Board (Single, Double, Triple)
-        </label>
-        <label class="radio-label">
-          <input type="radio" name="boardType" value="quad"> Quad Board (Includes Quad Ring)
-        </label>
-      </div>
-    </div>
-
-    <button class="btn" style="width: 100%; font-size: 1.2rem;" onclick="startGame()">Start Game</button>
-  </div>
-
-  <!-- GAME SCREEN -->
-  <div id="game-screen" class="hidden">
-    <div class="game-grid">
-      <!-- Left Column: Dartboard & Input -->
-      <div class="card">
-        <div class="board-container">
-          <svg id="dartboard" viewBox="-120 -120 240 240"></svg>
-        </div>
-
-        <div style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
-          Hit <b>GOLD</b> segments to score! Miss all 3 darts = Score Halved!
-        </div>
-
-        <!-- Input Pad -->
-        <div class="modifier-pad">
-          <button class="mod-btn active" id="mod-single" onclick="setModifier(1)">Single</button>
-          <button class="mod-btn" id="mod-double" onclick="setModifier(2)">Double</button>
-          <button class="mod-btn" id="mod-triple" onclick="setModifier(3)">Triple</button>
-          <button class="mod-btn" id="mod-quad" onclick="setModifier(4)">Quad</button>
-        </div>
-
-        <div class="num-pad" id="num-pad">
-          <!-- 1-20 buttons added via JS -->
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-          <button class="num-btn" id="btn-bull" onclick="submitHit(25)">BULL (25)</button>
-          <button class="num-btn" id="btn-miss" style="color: var(--danger);" onclick="submitHit(0)">MISS (0)</button>
-        </div>
-      </div>
-
-      <!-- Right Column: Status & Scores -->
-      <div class="card turn-card">
-        <div class="round-indicator" id="round-display">Round 1 of 6</div>
-        <div class="current-player" id="player-display">Player 1</div>
-
-        <div>
-          <span style="color: var(--text-muted); font-size: 0.9rem;">Darts Thrown This Turn</span>
-          <div class="dart-display">
-            <div class="dart-slot" id="dart-0">1</div>
-            <div class="dart-slot" id="dart-1">2</div>
-            <div class="dart-slot" id="dart-2">3</div>
-          </div>
-        </div>
-
-        <div style="text-align: left; margin-top: 10px;">
-          <label>Scoreboard</label>
-          <table class="scores-table">
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody id="scoreboard-body"></tbody>
-          </table>
-        </div>
-        
-        <button class="btn btn-secondary" style="margin-top: auto;" onclick="undoDart()">Undo Last Dart</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- GAME OVER SCREEN -->
-  <div id="game-over-screen" class="card hidden">
-    <div class="winner-box">
-      <div style="font-size: 1.2rem; color: var(--text-muted);">WINNER!</div>
-      <div class="winner-name" id="winner-display">🏁 Player 1 🏁</div>
-    </div>
-
-    <h2>Final Standings</h2>
-    <table class="scores-table" style="margin-bottom: 20px;">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Player</th>
-          <th>Final Score</th>
-        </tr>
-      </thead>
-      <tbody id="final-scoreboard-body"></tbody>
-    </table>
-
-    <button class="btn" style="width: 100%;" onclick="resetGame()">Play Again</button>
-  </div>
-</div>
-
-<script>
-  // Game Setup Variables
-  const TOTAL_ROUNDS = 6;
-  const SECTOR_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
-  
-  let players = [];
-  let isQuadBoard = false;
-  let currentRound = 1;
-  let currentPlayerIdx = 0;
-  let dartsThrownInTurn = [];
-  let activeModifier = 1; // 1=Single, 2=Double, 3=Triple, 4=Quad
-  let goldSegments = []; // Array of sector numbers active for current round
-  let moveHistory = []; // Stack for undo functionality
-
-  // Add initial 1-20 buttons
-  const numPad = document.getElementById('num-pad');
-  for (let i = 1; i <= 20; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'num-btn';
-    btn.id = `btn-num-${i}`;
-    btn.innerText = i;
-    btn.onclick = () => submitHit(i);
-    numPad.appendChild(btn);
-  }
-
-  function addPlayerInput() {
-    const container = document.getElementById('player-inputs');
-    const count = container.children.length + 1;
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'player-name';
-    input.placeholder = `Player ${count} Name`;
-    input.value = `Player ${count}`;
-    container.appendChild(input);
-  }
-
-  function startGame() {
-    const nameInputs = document.querySelectorAll('.player-name');
-    players = [];
-    nameInputs.forEach(input => {
-      const name = input.value.trim();
-      if (name) {
-        players.push({ name: name, score: 0, hitsThisRound: 0 });
-      }
-    });
-
-    if (players.length === 0) {
-      alert("Please add at least one player!");
-      return;
-    }
-
-    isQuadBoard = document.querySelector('input[name="boardType"]:checked').value === 'quad';
-    document.getElementById('mod-quad').disabled = !isQuadBoard;
-
-    currentRound = 1;
-    currentPlayerIdx = 0;
-    dartsThrownInTurn = [];
-    moveHistory = [];
-
-    document.getElementById('setup-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-
-    generateRoundGoldSegments();
-    updateUI();
-  }
-
-  function generateRoundGoldSegments() {
-    // Select 8 random unique segments out of 20
-    const shuffled = [...SECTOR_ORDER].sort(() => 0.5 - Math.random());
-    goldSegments = shuffled.slice(0, 8);
-  }
-
-  function setModifier(mod) {
-    activeModifier = mod;
-    document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('active'));
-    if(mod === 1) document.getElementById('mod-single').classList.add('active');
-    if(mod === 2) document.getElementById('mod-double').classList.add('active');
-    if(mod === 3) document.getElementById('mod-triple').classList.add('active');
-    if(mod === 4) document.getElementById('mod-quad').classList.add('active');
-  }
-
-  function submitHit(sector) {
-    if (dartsThrownInTurn.length >= 3) return;
-
-    let points = 0;
-    let isGoldHit = false;
-
-    if (sector > 0) {
-      // Check if sector is Gold
-      if (goldSegments.includes(sector) || sector === 25) { // Bull counts if we consider it gold or valid
-        if (goldSegments.includes(sector)) {
-          isGoldHit = true;
-          points = sector * activeModifier;
-        } else if (sector === 25) {
-          // Outer bull = 25 (single), Inner Bull = 50 (double)
-          if (activeModifier === 2) {
-            points = 50;
-            isGoldHit = goldSegments.includes(25); // If bull is in gold list
-          } else {
-            points = 25;
-            isGoldHit = goldSegments.includes(25);
-          }
-        }
-      }
-    }
-
-    // Save snapshot for Undo
-    moveHistory.push({
-      round: currentRound,
-      playerIdx: currentPlayerIdx,
-      darts: [...dartsThrownInTurn],
-      score: players[currentPlayerIdx].score,
-      hitsThisRound: players[currentPlayerIdx].hitsThisRound
-    });
-
-    if (isGoldHit) {
-      players[currentPlayerIdx].score += points;
-      players[currentPlayerIdx].hitsThisRound++;
-      dartsThrownInTurn.push({ text: `${activeModifier > 1 ? activeModifier + 'x' : ''}${sector}`, scored: true, points: points });
-    } else {
-      dartsThrownInTurn.push({ text: 'MISS', scored: false, points: 0 });
-    }
-
-    // Reset modifier back to single
-    setModifier(1);
-
-    // Turn transition check
-    if (dartsThrownInTurn.length === 3) {
-      setTimeout(endTurn, 400);
-    }
-
-    updateUI();
-  }
-
-  function endTurn() {
-    const player = players[currentPlayerIdx];
-    
-    // Check if player failed to score on any gold segment during the round
-    if (player.hitsThisRound === 0) {
-      player.score = Math.floor(player.score / 2);
-    }
-
-    // Move to next player
-    player.hitsThisRound = 0;
-    currentPlayerIdx++;
-    dartsThrownInTurn = [];
-
-    // End of Round check
-    if (currentPlayerIdx >= players.length) {
-      currentPlayerIdx = 0;
-      currentRound++;
-      if (currentRound > TOTAL_ROUNDS) {
-        endGame();
-        return;
-      }
-      generateRoundGoldSegments();
-    }
-
-    updateUI();
-  }
-
-  function undoDart() {
-    if (moveHistory.length === 0) return;
-    const lastState = moveHistory.pop();
-    
-    currentRound = lastState.round;
-    currentPlayerIdx = lastState.playerIdx;
-    dartsThrownInTurn = lastState.darts;
-    players[currentPlayerIdx].score = lastState.score;
-    players[currentPlayerIdx].hitsThisRound = lastState.hitsThisRound;
-
-    updateUI();
-  }
-
-  function endGame() {
-    document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('game-over-screen').classList.remove('hidden');
-
-    // Sort players by score descending
-    const sorted = [...players].sort((a, b) => b.score - a.score);
-
-    document.getElementById('winner-display').innerText = `🏁 ${sorted[0].name} 🏁`;
-
-    const tbody = document.getElementById('final-scoreboard-body');
-    tbody.innerHTML = '';
-    sorted.forEach((p, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${idx === 0 ? '🏁 1st' : (idx + 1) + 'th'}</td>
-        <td><b>${p.name}</b></td>
-        <td>${p.score} pts</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function resetGame() {
-    document.getElementById('game-over-screen').classList.add('hidden');
-    document.getElementById('setup-screen').classList.remove('hidden');
-  }
-
-  function updateUI() {
-    // Header Info
-    document.getElementById('round-display').innerText = `Round ${currentRound} of ${TOTAL_ROUNDS}`;
-    document.getElementById('player-display').innerText = `${players[currentPlayerIdx].name}'s Turn`;
-
-    // Dart Slots
-    for (let i = 0; i < 3; i++) {
-      const slot = document.getElementById(`dart-${i}`);
-      if (i < dartsThrownInTurn.length) {
-        const d = dartsThrownInTurn[i];
-        slot.innerText = d.text;
-        slot.className = `dart-slot ${d.scored ? 'filled' : 'miss'}`;
-      } else {
-        slot.innerText = i + 1;
-        slot.className = 'dart-slot';
-      }
-    }
-
-    // Number Pad Highlighting
-    for (let i = 1; i <= 20; i++) {
-      const btn = document.getElementById(`btn-num-${i}`);
-      if (goldSegments.includes(i)) {
-        btn.classList.add('active-target');
-      } else {
-        btn.classList.remove('active-target');
-      }
-    }
-
-    // Scoreboard
-    const tbody = document.getElementById('scoreboard-body');
-    tbody.innerHTML = '';
-    players.forEach((p, idx) => {
-      const tr = document.createElement('tr');
-      if (idx === currentPlayerIdx) tr.className = 'active-row';
-      tr.innerHTML = `<td>${p.name}</td><td>${p.score}</td>`;
-      tbody.appendChild(tr);
-    });
-
-    drawDartboard();
-  }
-
-  // Render SVG Dartboard dynamically highlighting Gold Segments
-  function drawDartboard() {
-    const svg = document.getElementById('dartboard');
-    svg.innerHTML = '';
-
-    const R_OUTER = 100;
-    const R_DOUBLE_OUT = 95;
-    const R_DOUBLE_IN = 85;
-    const R_TRIPLE_OUT = 55;
-    const R_TRIPLE_IN = 45;
-    const R_QUAD_OUT = 30;
-    const R_QUAD_IN = 22;
-    const R_BULL_OUT = 12;
-    const R_BULL_IN = 5;
-
-    // Background circle
-    const bg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    bg.setAttribute("r", R_OUTER);
-    bg.setAttribute("fill", "#000");
-    svg.appendChild(bg);
-
-    // Draw 20 Sectors
-    SECTOR_ORDER.forEach((num, index) => {
-      const anglePerSector = 360 / 20;
-      const startAngle = (index * anglePerSector) - 90 - (anglePerSector / 2);
-      const endAngle = startAngle + anglePerSector;
-      const isGold = goldSegments.includes(num);
-
-      const color1 = isGold ? '#ffd700' : (index % 2 === 0 ? '#e0e0e0' : '#111111');
-      const color2 = isGold ? '#c5a000' : (index % 2 === 0 ? '#d63031' : '#00b894');
-
-      // Outer Single
-      drawArc(svg, R_TRIPLE_OUT, R_DOUBLE_IN, startAngle, endAngle, color1);
-      // Inner Single
-      drawArc(svg, isQuadBoard ? R_QUAD_OUT : R_BULL_OUT, R_TRIPLE_IN, startAngle, endAngle, color1);
-      
-      // Double Ring
-      drawArc(svg, R_DOUBLE_IN, R_DOUBLE_OUT, startAngle, endAngle, color2);
-      // Triple Ring
-      drawArc(svg, R_TRIPLE_IN, R_TRIPLE_OUT, startAngle, endAngle, color2);
-
-      // Quad Ring (Optional)
-      if (isQuadBoard) {
-        drawArc(svg, R_QUAD_IN, R_QUAD_OUT, startAngle, endAngle, color2);
-      }
-
-      // Numbers
-      const rad = ((startAngle + endAngle) / 2) * (Math.PI / 180);
-      const tx = Math.cos(rad) * (R_DOUBLE_OUT + 8);
-      const ty = Math.sin(rad) * (R_DOUBLE_OUT + 8);
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", tx);
-      text.setAttribute("y", ty + 3);
-      text.setAttribute("fill", isGold ? '#ffd700' : '#ffffff');
-      text.setAttribute("font-size", "8");
-      text.setAttribute("font-weight", "bold");
-      text.setAttribute("text-anchor", "middle");
-      text.textContent = num;
-      svg.appendChild(text);
-    });
-
-    // Outer Bull
-    const outerBull = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    outerBull.setAttribute("r", R_BULL_OUT);
-    outerBull.setAttribute("fill", "#00b894");
-    svg.appendChild(outerBull);
-
-    // Inner Bull
-    const innerBull = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    innerBull.setAttribute("r", R_BULL_IN);
-    innerBull.setAttribute("fill", "#d63031");
-    svg.appendChild(innerBull);
-  }
-
-  function drawArc(svg, innerR, outerR, startDeg, endDeg, fill) {
-    const rad1 = startDeg * (Math.PI / 180);
-    const rad2 = endDeg * (Math.PI / 180);
-
-    const x1 = outerR * Math.cos(rad1);
-    const y1 = outerR * Math.sin(rad1);
-    const x2 = outerR * Math.cos(rad2);
-    const y2 = outerR * Math.sin(rad2);
-
     const x3 = innerR * Math.cos(rad2);
     const y3 = innerR * Math.sin(rad2);
     const x4 = innerR * Math.cos(rad1);
