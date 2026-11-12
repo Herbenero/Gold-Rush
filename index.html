@@ -59,117 +59,124 @@ input[type="text"] {width: 100%; padding: 12px; border-radius: 6px; border: 1px 
 </head>
 <body>
 <div class="container">
-<h1>🎯 Gold Rush</h1> 
+<h1>🎯 Gold Rush</h1>
 
 <!-- SETUP SCREEN -->
 <div id="setup-screen" class="card">
-    <div class="setup-group">
-        <label>Players</label>
-        <div id="player-inputs" class="player-inputs">
-            <input type="text" class="player-name" placeholder="Player 1 Name" value="Player 1">
-            <input type="text" class="player-name" placeholder="Player 2 Name" value="Player 2">
-        </div>
-        <button class="btn btn-secondary" onclick="addPlayerInput()">+ Add Player</button>
-    </div>
+<div class="setup-group">
+<label>Players</label>
+<div id="player-inputs" class="player-inputs">
+<input type="text" class="player-name" placeholder="Player 1 Name" value="Player 1">
+<input type="text" class="player-name" placeholder="Player 2 Name" value="Player 2">
+</div>
+<button class="btn btn-secondary" onclick="addPlayerInput()">+ Add Player</button>
+</div>
 
-    <div class="setup-group">
-        <label>Board Type</label>
-        <div class="board-select">
-            <label class="radio-label">
-                <input type="radio" name="boardType" value="basic" checked> Basic Board (Single, Double, Triple)
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="boardType" value="quad"> Quad Board (Includes Quad Ring)
-            </label>
-        </div>
-    </div>
+<div class="setup-group">
+<label>Board Type</label>
+<div class="board-select">
+<label class="radio-label">
+<input type="radio" name="boardType" value="basic" checked> Basic Board (Single, Double, Triple)
+</label>
+<label class="radio-label">
+<input type="radio" name="boardType" value="quad"> Quad Board (Includes Quad Ring)
+</label>
+</div>
+</div>
 
-    <!-- Randomize Player Order Checkbox -->
-    <div class="setup-group">
-        <label class="radio-label">
-            <input type="checkbox" id="randomize-players" style="accent-color: var(--accent); width: 18px; height: 18px; cursor: pointer;">
-            Randomize player order on start
-        </label>
-    </div>
+<!-- Randomize Player Order Checkbox -->
+<div class="setup-group">
+<label class="radio-label">
+<input type="checkbox" id="randomize-players" style="accent-color: var(--accent); width: 18px; height: 18px; cursor: pointer;"> Randomize player order on start
+</label>
+</div>
 
-    <button class="btn" style="width: 100%; font-size: 1.2rem;" onclick="startGame()">Start Game</button>
+<button class="btn" style="width: 100%; font-size: 1.2rem;" onclick="startGame()">Start Game</button>
 </div>
 
 <!-- GAME SCREEN -->
 <div id="game-screen" class="hidden">
-    <div class="game-grid">
-        <!-- Left Column: Dartboard & Input -->
-        <div class="card">
-            <div class="board-container">
-                <svg id="dartboard" viewBox="-120 -120 240 240"></svg>
-            </div>
-            <div style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
-                Hit <b>GOLD</b> segments to score! Miss all 3 darts = Score Halved!
-            </div>
-            <!-- Input Pad -->
-            <div class="modifier-pad">
-                <button class="mod-btn active" id="mod-single" onclick="setModifier(1)">Single</button>
-                <button class="mod-btn" id="mod-double" onclick="setModifier(2)">Double</button>
-                <button class="mod-btn" id="mod-triple" onclick="setModifier(3)">Triple</button>
-                <button class="mod-btn" id="mod-quad" onclick="setModifier(4)">Quad</button>
-            </div>
-            <div class="num-pad" id="num-pad"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-                <button class="num-btn" id="btn-bull" onclick="submitHit(25)">BULL (25)</button>
-                <button class="num-btn" id="btn-miss" style="color: var(--danger);" onclick="submitHit(0)">MISS (0)</button>
-            </div>
-        </div>
+<div class="game-grid">
+<!-- Left Column: Dartboard & Input -->
+<div class="card">
+<div class="board-container">
+<svg id="dartboard" viewBox="-120 -120 240 240"></svg>
+</div>
+<div style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+Hit <b>GOLD</b> segments to score! Miss all 3 darts = Score Halved!
+</div>
 
-        <!-- Right Column: Status & Scores -->
-        <div class="card turn-card">
-            <div class="round-indicator" id="round-display">Round 1 of 6</div>
-            <div class="current-player" id="player-display">Player 1</div>
-            <div>
-                <span style="color: var(--text-muted); font-size: 0.9rem;">Darts Thrown This Turn</span>
-                <div class="dart-display">
-                    <div class="dart-slot" id="dart-0">1</div>
-                    <div class="dart-slot" id="dart-1">2</div>
-                    <div class="dart-slot" id="dart-2">3</div>
-                </div>
-            </div>
-            <div style="text-align: left; margin-top: 10px;">
-                <label>Scoreboard</label>
-                <table class="scores-table">
-                    <thead>
-                        <tr>
-                            <th>Player</th>
-                            <th>Score</th>
-                        </tr>
-                    </thead>
-                    <tbody id="scoreboard-body"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-secondary" id="btn-undo" style="margin-top: auto;" onclick="undoPreviousDart()">↩ Undo Previous Dart</button>
-        </div>
-    </div>
+<!-- Input Pad -->
+<div class="modifier-pad">
+<button class="mod-btn active" id="mod-single" onclick="setModifier(1)">Single</button>
+<button class="mod-btn" id="mod-double" onclick="setModifier(2)">Double</button>
+<button class="mod-btn" id="mod-triple" onclick="setModifier(3)">Triple</button>
+<button class="mod-btn" id="mod-quad" onclick="setModifier(4)">Quad</button>
+</div>
+
+<div class="num-pad" id="num-pad"></div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+<button class="num-btn" id="btn-bull" onclick="submitHit(25)">BULL (25)</button>
+<button class="num-btn" id="btn-miss" style="color: var(--danger);" onclick="submitHit(0)">MISS (0)</button>
+</div>
+</div>
+
+<!-- Right Column: Status & Scores -->
+<div class="card turn-card">
+<div class="round-indicator" id="round-display">Round 1 of 6</div>
+<div class="current-player" id="player-display">Player 1</div>
+
+<div>
+<span style="color: var(--text-muted); font-size: 0.9rem;">Darts Thrown This Turn</span>
+<div class="dart-display">
+<div class="dart-slot" id="dart-0">1</div>
+<div class="dart-slot" id="dart-1">2</div>
+<div class="dart-slot" id="dart-2">3</div>
+</div>
+</div>
+
+<div style="text-align: left; margin-top: 10px;">
+<label>Scoreboard</label>
+<table class="scores-table">
+<thead>
+<tr>
+<th>Player</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody id="scoreboard-body"></tbody>
+</table>
+</div>
+
+<button class="btn btn-secondary" id="btn-undo" style="margin-top: auto;" onclick="undoPreviousDart()">↩ Undo Previous Dart</button>
+</div>
+</div>
 </div>
 
 <!-- GAME OVER SCREEN -->
 <div id="game-over-screen" class="card hidden">
-    <div class="winner-box">
-        <div style="font-size: 1.2rem; color: var(--text-muted);">WINNER!</div>
-        <div class="winner-name" id="winner-display">🏁 Player 1 🏁</div>
-    </div>
-    <h2 style="color: var(--text); text-align: center; margin-bottom: 10px;">Final Standings</h2>
-    <table class="scores-table" style="margin-bottom: 20px;">
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Final Score</th>
-            </tr>
-        </thead>
-        <tbody id="final-scoreboard-body"></tbody>
-    </table>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn btn-secondary" style="flex: 1;" onclick="undoPreviousDart(true)">↩ Undo Final Dart</button>
-        <button class="btn" style="flex: 2;" onclick="resetGame()">Play Again</button>
-    </div>
+<div class="winner-box">
+<div style="font-size: 1.2rem; color: var(--text-muted);">WINNER!</div>
+<div class="winner-name" id="winner-display">🏁 Player 1 🏁</div>
+</div>
+
+<h2 style="color: var(--text); text-align: center; margin-bottom: 10px;">Final Standings</h2>
+<table class="scores-table" style="margin-bottom: 20px;">
+<thead>
+<tr>
+<th>Rank</th>
+<th>Player</th>
+<th>Final Score</th>
+</tr>
+</thead>
+<tbody id="final-scoreboard-body"></tbody>
+</table>
+
+<div style="display: flex; gap: 10px;">
+<button class="btn btn-secondary" style="flex: 1;" onclick="undoPreviousDart(true)">↩ Undo Final Dart</button>
+<button class="btn" style="flex: 2;" onclick="resetGame()">Play Again</button>
+</div>
 </div>
 </div>
 
@@ -177,6 +184,7 @@ input[type="text"] {width: 100%; padding: 12px; border-radius: 6px; border: 1px 
 const TOTAL_ROUNDS = 6;
 const SECTOR_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5, 25];
 const PLAYER_COLORS = ['#ffd700', '#2ed573', '#ff4757', '#1e90ff', '#ffa500', '#e056fd', '#00d2d3', '#ff6b81'];
+
 let players = [];
 let isQuadBoard = false;
 let currentRound = 1;
@@ -210,6 +218,7 @@ function addPlayerInput() {
 function startGame() {
     const nameInputs = document.querySelectorAll('.player-name');
     players = [];
+    
     nameInputs.forEach((input, idx) => {
         const name = input.value.trim();
         if (name) {
@@ -234,10 +243,15 @@ function startGame() {
             const j = Math.floor(Math.random() * (i + 1));
             [players[i], players[j]] = [players[j], players[i]];
         }
+        // Re-assign colors to match their final shuffled index order
+        players.forEach((p, idx) => {
+            p.color = PLAYER_COLORS[idx % PLAYER_COLORS.length];
+        });
     }
 
     isQuadBoard = document.querySelector('input[name="boardType"]:checked').value === 'quad';
     document.getElementById('mod-quad').disabled = !isQuadBoard;
+
     currentRound = 1;
     currentPlayerIdx = 0;
     dartsThrownInTurn = [];
@@ -257,10 +271,12 @@ function generateGoldSegmentsForRound(roundNum) {
         let shuffled;
         let validSelection = false;
         const prevRoundSegments = roundNum > 1 ? goldSegmentsHistory[roundNum - 2] : [];
+
         while (!validSelection) {
             shuffled = [...SECTOR_ORDER].sort(() => 0.5 - Math.random());
             const candidate = shuffled.slice(0, 8);
             const hasOverlap = candidate.some(seg => prevRoundSegments.includes(seg));
+            
             if (!hasOverlap || roundNum === 1) {
                 goldSegmentsHistory[roundNum - 1] = candidate;
                 validSelection = true;
@@ -281,6 +297,7 @@ function setModifier(mod) {
 
 function submitHit(sector) {
     if (dartsThrownInTurn.length >= 3) return;
+
     const currentGold = goldSegmentsHistory[currentRound - 1];
     let points = 0;
     let isGoldHit = false;
@@ -337,6 +354,7 @@ function processEndOfTurn() {
         player.score = Math.floor(player.score / 2);
     }
     player.hitsThisRound = 0;
+
     currentPlayerIdx++;
     dartsThrownInTurn = [];
 
@@ -354,6 +372,7 @@ function processEndOfTurn() {
 
 function undoPreviousDart(fromGameOver = false) {
     if (moveHistory.length === 0) return;
+
     const lastState = moveHistory.pop();
     currentRound = lastState.currentRound;
     currentPlayerIdx = lastState.currentPlayerIdx;
@@ -364,12 +383,14 @@ function undoPreviousDart(fromGameOver = false) {
         document.getElementById('game-over-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
     }
+
     updateUI();
 }
 
 function endGame() {
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('game-over-screen').classList.remove('hidden');
+
     const sorted = [...players].sort((a, b) => b.score - a.score);
     const winnerDisplay = document.getElementById('winner-display');
     winnerDisplay.innerText = `🏁 ${sorted[0].name} 🏁`;
@@ -401,6 +422,7 @@ function updateUI() {
     const playerDisplay = document.getElementById('player-display');
     playerDisplay.innerText = `${currentPlayer.name}'s Turn`;
     playerDisplay.style.color = currentPlayer.color;
+
     document.getElementById('btn-undo').disabled = moveHistory.length === 0;
 
     for (let i = 0; i < 3; i++) {
@@ -449,6 +471,7 @@ function updateUI() {
 function drawDartboard(goldSegments) {
     const svg = document.getElementById('dartboard');
     svg.innerHTML = '';
+
     const R_OUTER = 100;
     const R_DOUBLE_OUT = 95;
     const R_DOUBLE_IN = 85;
@@ -513,6 +536,7 @@ function drawDartboard(goldSegments) {
 function drawArc(svg, innerR, outerR, startDeg, endDeg, fill) {
     const rad1 = startDeg * (Math.PI / 180);
     const rad2 = endDeg * (Math.PI / 180);
+
     const x1 = outerR * Math.cos(rad1);
     const y1 = outerR * Math.sin(rad1);
     const x2 = outerR * Math.cos(rad2);
